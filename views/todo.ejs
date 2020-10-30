@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Ma todolist</title>
+</head>
+
+<body class="container-fluid">
+    <div class="row justify-content-center mt-4">
+        <div class="col-10"><h1 class="text-center">Ma todolist</h1></div>
+        <div class="col-10">
+            <div class="grid">
+                <% todolist.forEach(function(todo, index) { %>
+                    <div class="item card">
+                        <div class="card-body justify-content-between d-flex">
+                            <div>
+                                <span class="position"><%= parseInt(todo.position) + 1 %></span>
+                            </div>
+                            <div class="justify-content-center">
+                                <input name="name" id="<%= index %>" value="<%= todo.name %>"/>
+                            </div>
+                            <div class="justify-content-end">
+                                <a class="text-danger" href="/todo/supprimer/<%= index %>"><i class="fas fa-times-circle"></i></a>
+                                <a class="text-decoration modifier"><i class="far fa-edit"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-10 mt-4">
+            <form action="/todo/ajouter/" method="post">
+                <div class="form-group">
+                    <label for="newtodo" for="newtodo">Que dois-je faire ?</label>
+                    <input class="form-control" type="text" name="newtodo" id="newtodo" autofocus />
+                </div>
+                <button class="form-control btn btn-primary" type="submit" class="btn btn-primary">Ajouter</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
+<link rel='stylesheet' href="/include/css/bootstrap.css"></link>
+<link rel='stylesheet' href="/include/css/all.css"></link>
+<script src="/include/jquery.js"></script>
+<script src="/include/js/bootstrap.js"></script>
+<script src="/include/js/bootstrap.bundle.js"></script>
+<script src="/include/js/all.js"></script>
+<script src="/include/js/muuri.js"></script>
+<script>
+    const grid = new Muuri('.grid', {
+        dragEnabled: true
+    });
+    grid.on('move', function (data) {
+        console.log(data);
+        const items = grid._items;
+        const newTodos = items.map((item, index) => {
+            $(item._element).find('.position').html(index + 1);
+            return {name: $(item._element).find('input').val(), position: index};
+        });
+        $.post('/todo/positioning', {
+            newTodos
+        });
+    });
+    $('.modifier').on('click', e => {
+        e.preventDefault();
+        const $this = $(e.currentTarget);
+        const newVal = $this.closest('.card-body').find('input').val();
+        const id = $this.closest('.card-body').find('input').attr('id');
+        $.post('/todo/modifier', {
+            newVal,
+            id
+        })
+        .then(() => location.href='/todo');
+    })
+</script>
+<style>
+.grid {
+  position: relative;
+}
+
+.item {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+}
+
+.item.muuri-item-dragging {
+  z-index: 3;
+}
+
+.item.muuri-item-releasing {
+  z-index: 2;
+}
+
+.item.muuri-item-hidden {
+  z-index: 0;
+}
+</style>
